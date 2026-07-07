@@ -15,6 +15,12 @@ variable "containers" {
   default = {}
 }
 
+variable "metadata" {
+  description = "Map of metadata fields from Score spec. Key is metadata name, value is string. Used for custom metadata."
+  type        = map(string)
+  default     = {}
+}
+
 variable "container_image" {
   description = "Container image URI from ECR or container registry (e.g., 123456789.dkr.ecr.us-east-1.amazonaws.com/my-app:v1.0.0). Ignored when containers var is set."
   type        = string
