@@ -50,6 +50,11 @@ variable "memory_size" {
   }
 }
 
+variable "service" {
+  description = "Service name"
+  type        = string
+}
+
 variable "timeout" {
   description = "Function timeout in seconds (1-900)"
   type        = number
