@@ -4,25 +4,37 @@ variable "function_name" {
   default     = "score-workload"
 }
 
+variable "containers" {
+  description = "Map of container definitions from Score spec. Key is container name, value has image, command, args, and variables fields. When set, takes precedence over container_image/container_command/container_args."
+  type = map(object({
+    image     = string
+    command   = optional(list(string))
+    args      = optional(list(string))
+    variables = optional(map(string), {})
+  }))
+  default = {}
+}
+
 variable "container_image" {
-  description = "Container image URI from ECR or container registry (e.g., 123456789.dkr.ecr.us-east-1.amazonaws.com/my-app:v1.0.0)"
+  description = "Container image URI from ECR or container registry (e.g., 123456789.dkr.ecr.us-east-1.amazonaws.com/my-app:v1.0.0). Ignored when containers var is set."
   type        = string
+  default     = null
 }
 
 variable "container_command" {
-  description = "Container command to execute (overrides ENTRYPOINT)"
+  description = "Container command to execute (overrides ENTRYPOINT). Ignored when containers var is set."
   type        = list(string)
   default     = null
 }
 
 variable "container_args" {
-  description = "Container arguments (overrides CMD)"
+  description = "Container arguments (overrides CMD). Ignored when containers var is set."
   type        = list(string)
   default     = null
 }
 
 variable "environment_variables" {
-  description = "Environment variables passed to container (resolved resource outputs + custom variables)"
+  description = "Environment variables passed to container (resolved resource outputs + custom variables). Merged with variables from the containers var."
   type        = map(string)
   default     = {}
 }

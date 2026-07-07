@@ -1,3 +1,17 @@
+# Derive container config from either the Score `containers` map or direct vars.
+# `containers` takes precedence — only the first container is used (Lambda is single-container).
+locals {
+  _first_container  = length(var.containers) > 0 ? values(var.containers)[0] : null
+  container_image   = local._first_container != null ? local._first_container.image : var.container_image
+  container_command = local._first_container != null ? try(local._first_container.command, null) : var.container_command
+  container_args    = local._first_container != null ? try(local._first_container.args, null) : var.container_args
+  # Merge Score-defined variables with any additional environment_variables input
+  all_env_vars = merge(
+    local._first_container != null ? try(local._first_container.variables, {}) : {},
+    var.environment_variables,
+  )
+}
+
 # CloudWatch Log Group for Lambda function output
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/${var.function_name}"
@@ -60,7 +74,7 @@ resource "aws_iam_role_policy" "lambda_logs" {
 resource "aws_lambda_function" "workload" {
   function_name = var.function_name
   role          = aws_iam_role.lambda_role.arn
-  image_uri     = var.container_image
+  image_uri     = local.container_image
   package_type  = "Image"
 
   # Execution configuration
@@ -73,15 +87,15 @@ resource "aws_lambda_function" "workload" {
 
   # Environment variables from resolved resources + custom vars
   environment {
-    variables = var.environment_variables
+    variables = local.all_env_vars
   }
 
   # Container image overrides (if provided)
   dynamic "image_config" {
-    for_each = (var.container_command != null || var.container_args != null) ? [1] : []
+    for_each = (local.container_command != null || local.container_args != null) ? [1] : []
     content {
-      entry_point = var.container_command
-      command     = var.container_args
+      entry_point = local.container_command
+      command     = local.container_args
     }
   }
 
