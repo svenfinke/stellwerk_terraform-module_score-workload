@@ -58,7 +58,6 @@ variable "memory_size" {
 
 variable "service" {
   description = "Service name"
-  type        = string
 }
 
 variable "timeout" {
