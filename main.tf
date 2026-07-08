@@ -9,6 +9,9 @@ locals {
   all_env_vars = merge(
     local._first_container != null ? try(local._first_container.variables, {}) : {},
     var.environment_variables,
+    {
+      SPRING_PROFILES_ACTIVE = var.metadata.spring_profiles_active != null ? var.metadata.spring_profiles_active : "default"
+    }
   )
 }
 
